@@ -3,14 +3,17 @@ import { LogEntry, LogType } from './types';
 
 const STORAGE_KEY = 'famine.logs';
 
-export class LogStore {
+export class LogStore implements vscode.Disposable {
   private readonly _onDidChange = new vscode.EventEmitter<void>();
   readonly onDidChange = this._onDidChange.event;
 
-  constructor(private readonly context: vscode.ExtensionContext) {}
+  constructor(private readonly context: vscode.ExtensionContext) {
+    this.context.globalState.setKeysForSync([STORAGE_KEY]);
+  }
 
   getAll(): LogEntry[] {
-    return this.context.globalState.get<LogEntry[]>(STORAGE_KEY, []);
+    const stored = this.context.globalState.get<LogEntry[]>(STORAGE_KEY, []);
+    return Array.isArray(stored) ? stored : [];
   }
 
   getToday(): LogEntry[] {
@@ -37,6 +40,14 @@ export class LogStore {
     await this.context.globalState.update(STORAGE_KEY, all);
     this._onDidChange.fire();
   }
+
+  refresh(): void {
+    this._onDidChange.fire();
+  }
+
+  dispose(): void {
+    this._onDidChange.dispose();
+  }
 }
 
 function startOfDay(ts: number): number {
@@ -46,19 +57,17 @@ function startOfDay(ts: number): number {
 }
 
 function randomId(): string {
-  // crypto.randomUUID is available in the Node runtime VS Code ships with,
-  // avoiding a dependency on the `uuid` package for boilerplate this small.
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 export function parseLogInput(raw: string): { type: LogType; content: string } {
-  const winMatch = raw.match(/^\/win\s+(.*)$/i);
+  const winMatch = raw.match(/^\/win(?:\s+(.*))?$/i);
   if (winMatch) {
-    return { type: 'win', content: winMatch[1].trim() };
+    return { type: 'win', content: (winMatch[1] ?? '').trim() };
   }
-  const blockMatch = raw.match(/^\/block(?:er)?\s+(.*)$/i);
+  const blockMatch = raw.match(/^\/block(?:er)?(?:\s+(.*))?$/i);
   if (blockMatch) {
-    return { type: 'blocker', content: blockMatch[1].trim() };
+    return { type: 'blocker', content: (blockMatch[1] ?? '').trim() };
   }
   return { type: 'note', content: raw.trim() };
 }

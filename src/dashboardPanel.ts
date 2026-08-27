@@ -11,13 +11,13 @@ export class DashboardPanel {
 
     if (DashboardPanel.current) {
       DashboardPanel.current.panel.reveal(column);
-      DashboardPanel.current.update(store);
+      DashboardPanel.current.postLogs();
       return;
     }
 
     const panel = vscode.window.createWebviewPanel(
       'famine.dashboard',
-      'The Developer Famine — Dashboard',
+      'developer-famine — log',
       column ?? vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -35,10 +35,10 @@ export class DashboardPanel {
     private readonly store: LogStore
   ) {
     this.panel = panel;
-    this.update(store);
+    this.panel.webview.html = this.getHtml(this.panel.webview);
 
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
-    this.store.onDidChange(() => this.update(store), null, this.disposables);
+    this.store.onDidChange(() => this.postLogs(), null, this.disposables);
 
     this.panel.webview.onDidReceiveMessage(
       (message) => {
@@ -51,24 +51,24 @@ export class DashboardPanel {
     );
   }
 
-  private update(store: LogStore): void {
-    this.panel.webview.html = this.getHtml(this.panel.webview, store);
+  private postLogs(): void {
+    this.panel.webview.postMessage({ type: 'update', logs: this.store.getAll() });
   }
 
-  private getHtml(webview: vscode.Webview, store: LogStore): string {
+  private getHtml(webview: vscode.Webview): string {
     const cssUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'media', 'dashboard.css'));
     const jsUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'media', 'dashboard.js'));
     const nonce = getNonce();
-    const logs = JSON.stringify(store.getAll());
+    const logs = JSON.stringify(this.store.getAll());
 
-    return /* html */ `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource}; script-src 'nonce-${nonce}';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="${cssUri}" rel="stylesheet" />
-  <title>The Developer Famine — Dashboard</title>
+  <title>developer-famine — log</title>
 </head>
 <body>
   <div id="app"></div>

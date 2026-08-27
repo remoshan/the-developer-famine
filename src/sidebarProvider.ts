@@ -16,21 +16,26 @@ class LogTreeItem extends vscode.TreeItem {
       minute: '2-digit'
     });
     this.iconPath = TYPE_ICON[entry.type];
-    this.contextValue = 'famine.logEntry';
     this.tooltip = `${entry.type.toUpperCase()} · ${new Date(entry.timestamp).toLocaleString()}`;
   }
 }
 
-export class TodayLogProvider implements vscode.TreeDataProvider<LogTreeItem> {
+export class TodayLogProvider implements vscode.TreeDataProvider<LogTreeItem>, vscode.Disposable {
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<void>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+  private readonly storeSubscription: vscode.Disposable;
 
   constructor(private readonly store: LogStore) {
-    this.store.onDidChange(() => this._onDidChangeTreeData.fire());
+    this.storeSubscription = this.store.onDidChange(() => this._onDidChangeTreeData.fire());
   }
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
+  }
+
+  dispose(): void {
+    this.storeSubscription.dispose();
+    this._onDidChangeTreeData.dispose();
   }
 
   getTreeItem(element: LogTreeItem): vscode.TreeItem {
