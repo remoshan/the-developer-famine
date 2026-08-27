@@ -1,0 +1,95 @@
+{
+  "name": "the-developer-famine",
+  "displayName": "The Developer Famine",
+  "description": "A frictionless developer bragging ledger and standup architect. Log wins and blockers without leaving your IDE.",
+  "version": "0.1.0",
+  "publisher": "your-publisher-name",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "famine.logEntry",
+        "title": "Famine: Log Entry",
+        "icon": "$(pencil)"
+      },
+      {
+        "command": "famine.copyStandup",
+        "title": "Famine: Copy Standup to Clipboard",
+        "icon": "$(clippy)"
+      },
+      {
+        "command": "famine.openDashboard",
+        "title": "Famine: Open Dashboard",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "famine.refreshView",
+        "title": "Famine: Refresh",
+        "icon": "$(refresh)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "famine-sidebar",
+          "title": "Developer Famine",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "famine-sidebar": [
+        {
+          "id": "famine.todayView",
+          "name": "Today's Log"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "famine.logEntry",
+          "when": "view == famine.todayView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "famine.copyStandup",
+          "when": "view == famine.todayView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "famine.openDashboard",
+          "when": "view == famine.todayView",
+          "group": "navigation@3"
+        },
+        {
+          "command": "famine.refreshView",
+          "when": "view == famine.todayView",
+          "group": "navigation@4"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "famine.logEntry",
+        "key": "ctrl+alt+l",
+        "mac": "cmd+alt+l"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0"
+  }
+}
