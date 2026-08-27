@@ -9,6 +9,14 @@ export function activate(context: vscode.ExtensionContext): void {
 
   vscode.window.registerTreeDataProvider('famine.todayView', treeProvider);
 
+  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+  statusBarItem.text = '$(pencil) Log';
+  statusBarItem.tooltip = 'Developer Famine: Log a win, blocker, or note';
+  statusBarItem.command = 'famine.logEntry';
+  statusBarItem.show();
+
+  context.subscriptions.push(store, treeProvider, statusBarItem, scheduleMidnightRefresh(store));
+
   context.subscriptions.push(
     vscode.commands.registerCommand('famine.logEntry', async () => {
       const raw = await vscode.window.showInputBox({
@@ -50,6 +58,22 @@ export function activate(context: vscode.ExtensionContext): void {
       treeProvider.refresh();
     })
   );
+}
+
+function scheduleMidnightRefresh(store: LogStore): vscode.Disposable {
+  let timer: ReturnType<typeof setTimeout>;
+
+  const scheduleNext = () => {
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5);
+    timer = setTimeout(() => {
+      store.refresh();
+      scheduleNext();
+    }, nextMidnight.getTime() - now.getTime());
+  };
+
+  scheduleNext();
+  return new vscode.Disposable(() => clearTimeout(timer));
 }
 
 export function deactivate(): void {}

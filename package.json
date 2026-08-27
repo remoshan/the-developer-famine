@@ -2,8 +2,15 @@
   "name": "the-developer-famine",
   "displayName": "The Developer Famine",
   "description": "A frictionless developer bragging ledger and standup architect. Log wins and blockers without leaving your IDE.",
-  "version": "0.1.0",
-  "publisher": "your-publisher-name",
+  "version": "1.0.0",
+  "publisher": "Remoshan3107",
+  "icon": "resources/extension_icon.png",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/remoshan/the-developer-famine.git"
+  },
+  "keywords": ["standup", "changelog", "productivity", "logging", "daily log"],
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -14,22 +21,26 @@
     "commands": [
       {
         "command": "famine.logEntry",
-        "title": "Famine: Log Entry",
+        "category": "Developer Famine",
+        "title": "Log Entry",
         "icon": "$(pencil)"
       },
       {
         "command": "famine.copyStandup",
-        "title": "Famine: Copy Standup to Clipboard",
+        "category": "Developer Famine",
+        "title": "Copy Standup to Clipboard",
         "icon": "$(clippy)"
       },
       {
         "command": "famine.openDashboard",
-        "title": "Famine: Open Dashboard",
+        "category": "Developer Famine",
+        "title": "Open Dashboard",
         "icon": "$(graph)"
       },
       {
         "command": "famine.refreshView",
-        "title": "Famine: Refresh",
+        "category": "Developer Famine",
+        "title": "Refresh",
         "icon": "$(refresh)"
       }
     ],
@@ -90,6 +101,7 @@
   "devDependencies": {
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.24.0",
     "typescript": "^5.4.0"
   }
 }

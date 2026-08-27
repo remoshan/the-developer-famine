@@ -1,95 +1,99 @@
 (function () {
   const vscode = acquireVsCodeApi();
-  const data = window.__FAMINE_DATA__ || [];
   const app = document.getElementById('app');
 
-  render(data);
+  const SIGN = { win: '+', blocker: '-', note: '~' };
+
+  render(window.__FAMINE_DATA__ || []);
+
+  window.addEventListener('message', (event) => {
+    if (event.data?.type === 'update') {
+      render(event.data.logs || []);
+    }
+  });
 
   function render(entries) {
     const wins = entries.filter((e) => e.type === 'win').length;
     const blockers = entries.filter((e) => e.type === 'blocker').length;
+    const notes = entries.filter((e) => e.type === 'note').length;
 
     app.innerHTML = '';
-    app.appendChild(buildHero());
-    app.appendChild(buildStats(wins, blockers, entries.length));
+    app.appendChild(buildHeader());
+    app.appendChild(buildSummary(entries.length, wins, blockers, notes));
 
     if (entries.length === 0) {
       app.appendChild(buildEmptyState());
       return;
     }
 
-    const groups = groupByDay(entries);
-    for (const { label, items } of groups) {
+    for (const { label, items } of groupByDay(entries)) {
       app.appendChild(buildDayGroup(label, items));
     }
   }
 
-  function buildHero() {
-    const hero = el('div', 'hero');
-    hero.appendChild(el('p', 'hero-eyebrow', 'The Developer Famine'));
-    hero.appendChild(el('h1', 'hero-title', 'Dashboard'));
-    hero.appendChild(el('p', 'hero-subtitle', 'Every win, every blocker — one quiet ledger.'));
-    return hero;
+  function buildHeader() {
+    const header = el('div', 'term-header');
+    header.appendChild(el('span', 'prompt', '$ '));
+    header.appendChild(el('span', 'term-command', 'developer-famine '));
+    header.appendChild(el('span', 'term-flag', '--log'));
+    return header;
   }
 
-  function buildStats(wins, blockers, total) {
-    const row = el('div', 'stats-row');
-    row.appendChild(statCard(String(total), 'Total entries'));
-    row.appendChild(statCard(String(wins), 'Wins', 'win'));
-    row.appendChild(statCard(String(blockers), 'Blockers', 'blocker'));
-    return row;
-  }
-
-  function statCard(value, label, accent) {
-    const card = el('div', 'stat-card');
-    card.appendChild(el('div', 'stat-value' + (accent ? ' ' + accent : ''), value));
-    card.appendChild(el('div', 'stat-label', label));
-    return card;
+  function buildSummary(total, wins, blockers, notes) {
+    const line = el('div', 'term-summary');
+    line.appendChild(document.createTextNode(total + ' entries  '));
+    line.appendChild(el('span', 'win', wins + ' win'));
+    line.appendChild(document.createTextNode('  '));
+    line.appendChild(el('span', 'blocker', blockers + ' blocker'));
+    line.appendChild(document.createTextNode('  '));
+    line.appendChild(el('span', 'note', notes + ' note'));
+    return line;
   }
 
   function buildEmptyState() {
     const wrap = el('div', 'empty-state');
-    wrap.appendChild(el('div', 'empty-state-title', 'Nothing logged yet'));
-    wrap.appendChild(el('div', '', 'Run "Famine: Log Entry" from the Command Palette to get started.'));
+    wrap.appendChild(el('div', '', '// nothing logged yet'));
+    const hint = el('div', '');
+    hint.appendChild(document.createTextNode('> run '));
+    hint.appendChild(el('span', 'hint', '">Developer Famine: Log Entry"'));
+    hint.appendChild(document.createTextNode(' or click '));
+    hint.appendChild(el('span', 'hint', '$(pencil) Log'));
+    hint.appendChild(document.createTextNode(' in the status bar'));
+    wrap.appendChild(hint);
     return wrap;
   }
 
   function buildDayGroup(label, items) {
     const group = el('div', 'day-group');
-    group.appendChild(el('h2', 'day-heading', label));
-    const list = el('div', 'entry-list');
+    group.appendChild(el('div', 'day-comment', '// ' + label));
     items
       .sort((a, b) => b.timestamp - a.timestamp)
-      .forEach((entry) => list.appendChild(buildEntryCard(entry)));
-    group.appendChild(list);
+      .forEach((entry) => group.appendChild(buildEntryRow(entry)));
     return group;
   }
 
-  function buildEntryCard(entry) {
-    const card = el('div', 'entry-card');
+  function buildEntryRow(entry) {
+    const row = el('div', 'entry-row ' + entry.type);
 
-    const tag = el('span', 'entry-tag ' + entry.type, entry.type);
-    card.appendChild(tag);
-
-    const body = el('div', 'entry-body');
-    body.appendChild(el('div', 'entry-content', entry.content));
-    body.appendChild(
+    row.appendChild(
       el(
-        'div',
-        'entry-time',
-        new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        'span',
+        'col-time',
+        new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
       )
     );
-    card.appendChild(body);
+    row.appendChild(el('span', 'col-sign', SIGN[entry.type] || ' '));
+    row.appendChild(el('span', 'col-type', entry.type));
+    row.appendChild(el('span', 'col-content', entry.content));
 
-    const del = el('button', 'entry-delete', '✕');
+    const del = el('button', 'col-delete', 'rm');
     del.title = 'Delete entry';
     del.addEventListener('click', () => {
       vscode.postMessage({ type: 'deleteEntry', id: entry.id });
     });
-    card.appendChild(del);
+    row.appendChild(del);
 
-    return card;
+    return row;
   }
 
   function groupByDay(entries) {
