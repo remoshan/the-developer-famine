@@ -21,6 +21,10 @@ export class LogStore implements vscode.Disposable {
     return this.getAll().filter((e) => e.timestamp >= start);
   }
 
+  getOpenTodos(): LogEntry[] {
+    return this.getAll().filter((e) => e.type === 'todo' && !e.done);
+  }
+
   async add(type: LogType, content: string): Promise<LogEntry> {
     const entry: LogEntry = {
       id: randomId(),
@@ -37,6 +41,17 @@ export class LogStore implements vscode.Disposable {
 
   async remove(id: string): Promise<void> {
     const all = this.getAll().filter((e) => e.id !== id);
+    await this.context.globalState.update(STORAGE_KEY, all);
+    this._onDidChange.fire();
+  }
+
+  async markDone(id: string): Promise<void> {
+    const all = this.getAll();
+    const entry = all.find((e) => e.id === id);
+    if (!entry) {
+      return;
+    }
+    entry.done = true;
     await this.context.globalState.update(STORAGE_KEY, all);
     this._onDidChange.fire();
   }
@@ -68,6 +83,10 @@ export function parseLogInput(raw: string): { type: LogType; content: string } {
   const blockMatch = raw.match(/^\/block(?:er)?(?:\s+(.*))?$/i);
   if (blockMatch) {
     return { type: 'blocker', content: (blockMatch[1] ?? '').trim() };
+  }
+  const todoMatch = raw.match(/^\/todo(?:\s+(.*))?$/i);
+  if (todoMatch) {
+    return { type: 'todo', content: (todoMatch[1] ?? '').trim() };
   }
   return { type: 'note', content: raw.trim() };
 }

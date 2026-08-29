@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
   statusBarItem.text = '$(pencil) Log';
-  statusBarItem.tooltip = 'Developer Famine: Log a win, blocker, or note';
+  statusBarItem.tooltip = 'Developer Famine: Log a win, blocker, note, or todo';
   statusBarItem.command = 'famine.logEntry';
   statusBarItem.show();
 
@@ -20,12 +20,29 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand('famine.logEntry', async () => {
       const raw = await vscode.window.showInputBox({
-        title: 'Log a win, blocker, or note',
-        placeHolder: '/win Fixed the memory leak   ·   /block Waiting on AWS keys   ·   anything else = note',
+        title: 'Log a win, blocker, note, or todo',
+        placeHolder: '/win ...   ·   /block ...   ·   /todo ...   ·   /done   ·   anything else = note',
         ignoreFocusOut: true
       });
 
       if (!raw || !raw.trim()) {
+        return;
+      }
+
+      if (/^\/done\s*$/i.test(raw)) {
+        const openTodos = store.getOpenTodos();
+        if (openTodos.length === 0) {
+          vscode.window.showInformationMessage('Famine: no open todos to complete.');
+          return;
+        }
+        const picked = await vscode.window.showQuickPick(
+          openTodos.map((t) => ({ label: t.content, id: t.id })),
+          { title: 'Mark a todo as done', placeHolder: 'Select or type to filter…' }
+        );
+        if (picked) {
+          await store.markDone(picked.id);
+          vscode.window.setStatusBarMessage('$(check) Famine: todo marked done', 2500);
+        }
         return;
       }
 
