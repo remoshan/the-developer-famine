@@ -5,8 +5,11 @@ import { LogEntry, LogType } from './types';
 const TYPE_ICON: Record<LogType, vscode.ThemeIcon> = {
   win: new vscode.ThemeIcon('check', new vscode.ThemeColor('charts.green')),
   blocker: new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.red')),
-  note: new vscode.ThemeIcon('note', new vscode.ThemeColor('charts.blue'))
+  note: new vscode.ThemeIcon('note', new vscode.ThemeColor('charts.blue')),
+  todo: new vscode.ThemeIcon('checklist', new vscode.ThemeColor('charts.yellow'))
 };
+
+const DONE_ICON = new vscode.ThemeIcon('pass', new vscode.ThemeColor('charts.green'));
 
 class LogTreeItem extends vscode.TreeItem {
   constructor(public readonly entry: LogEntry) {
@@ -15,8 +18,10 @@ class LogTreeItem extends vscode.TreeItem {
       hour: '2-digit',
       minute: '2-digit'
     });
-    this.iconPath = TYPE_ICON[entry.type];
-    this.tooltip = `${entry.type.toUpperCase()} · ${new Date(entry.timestamp).toLocaleString()}`;
+    const isDoneTodo = entry.type === 'todo' && entry.done;
+    this.iconPath = isDoneTodo ? DONE_ICON : TYPE_ICON[entry.type];
+    const label = isDoneTodo ? 'DONE' : entry.type.toUpperCase();
+    this.tooltip = `${label} · ${new Date(entry.timestamp).toLocaleString()}`;
   }
 }
 
@@ -54,11 +59,19 @@ export function formatStandupMarkdown(entries: LogEntry[]): string {
   const wins = entries.filter((e) => e.type === 'win');
   const blockers = entries.filter((e) => e.type === 'blocker');
   const notes = entries.filter((e) => e.type === 'note');
+  const openTodos = entries.filter((e) => e.type === 'todo' && !e.done);
+  const doneTodos = entries.filter((e) => e.type === 'todo' && e.done);
 
   const section = (title: string, items: LogEntry[]) =>
     items.length ? `**${title}**\n${items.map((i) => `- ${i.content}`).join('\n')}\n` : '';
 
-  return [section('Wins', wins), section('Blockers', blockers), section('Notes', notes)]
+  return [
+    section('Wins', wins),
+    section('Blockers', blockers),
+    section('Todos', openTodos),
+    section('Done', doneTodos),
+    section('Notes', notes)
+  ]
     .filter(Boolean)
     .join('\n')
     .trim();

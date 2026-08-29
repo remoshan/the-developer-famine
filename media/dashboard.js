@@ -2,7 +2,7 @@
   const vscode = acquireVsCodeApi();
   const app = document.getElementById('app');
 
-  const SIGN = { win: '+', blocker: '-', note: '~' };
+  const SIGN = { win: '+', blocker: '-', note: '~', todo: '*', done: 'x' };
 
   render(window.__FAMINE_DATA__ || []);
 
@@ -16,10 +16,12 @@
     const wins = entries.filter((e) => e.type === 'win').length;
     const blockers = entries.filter((e) => e.type === 'blocker').length;
     const notes = entries.filter((e) => e.type === 'note').length;
+    const todos = entries.filter((e) => e.type === 'todo' && !e.done).length;
+    const done = entries.filter((e) => e.type === 'todo' && e.done).length;
 
     app.innerHTML = '';
     app.appendChild(buildHeader());
-    app.appendChild(buildSummary(entries.length, wins, blockers, notes));
+    app.appendChild(buildSummary(entries.length, wins, blockers, notes, todos, done));
 
     if (entries.length === 0) {
       app.appendChild(buildEmptyState());
@@ -39,12 +41,16 @@
     return header;
   }
 
-  function buildSummary(total, wins, blockers, notes) {
+  function buildSummary(total, wins, blockers, notes, todos, done) {
     const line = el('div', 'term-summary');
     line.appendChild(document.createTextNode(total + ' entries  '));
     line.appendChild(el('span', 'win', wins + ' win'));
     line.appendChild(document.createTextNode('  '));
     line.appendChild(el('span', 'blocker', blockers + ' blocker'));
+    line.appendChild(document.createTextNode('  '));
+    line.appendChild(el('span', 'todo', todos + ' todo'));
+    line.appendChild(document.createTextNode('  '));
+    line.appendChild(el('span', 'done', done + ' done'));
     line.appendChild(document.createTextNode('  '));
     line.appendChild(el('span', 'note', notes + ' note'));
     return line;
@@ -73,7 +79,8 @@
   }
 
   function buildEntryRow(entry) {
-    const row = el('div', 'entry-row ' + entry.type);
+    const displayType = entry.type === 'todo' && entry.done ? 'done' : entry.type;
+    const row = el('div', 'entry-row ' + displayType);
 
     row.appendChild(
       el(
@@ -82,8 +89,8 @@
         new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
       )
     );
-    row.appendChild(el('span', 'col-sign', SIGN[entry.type] || ' '));
-    row.appendChild(el('span', 'col-type', entry.type));
+    row.appendChild(el('span', 'col-sign', SIGN[displayType] || ' '));
+    row.appendChild(el('span', 'col-type', displayType));
     row.appendChild(el('span', 'col-content', entry.content));
 
     const del = el('button', 'col-delete', 'rm');

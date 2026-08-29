@@ -2,6 +2,8 @@
   --famine-win: var(--vscode-terminal-ansiGreen, #89d185);
   --famine-blocker: var(--vscode-terminal-ansiRed, #f14c4c);
   --famine-note: var(--vscode-terminal-ansiBlue, #3b8eea);
+  --famine-todo: var(--vscode-terminal-ansiYellow, #e5e510);
+  --famine-done: var(--vscode-descriptionForeground);
 }
 
 * {
@@ -62,6 +64,14 @@ body {
   color: var(--famine-note);
 }
 
+.term-summary .todo {
+  color: var(--famine-todo);
+}
+
+.term-summary .done {
+  color: var(--famine-done);
+}
+
 .day-group {
   margin-bottom: 24px;
 }
@@ -108,6 +118,16 @@ body {
 .entry-row.note .col-sign,
 .entry-row.note .col-type {
   color: var(--famine-note);
+}
+
+.entry-row.todo .col-sign,
+.entry-row.todo .col-type {
+  color: var(--famine-todo);
+}
+
+.entry-row.done .col-sign,
+.entry-row.done .col-type {
+  color: var(--famine-done);
 }
 
 .col-type {

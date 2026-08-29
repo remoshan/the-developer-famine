@@ -2,7 +2,7 @@
   "name": "the-developer-famine-1-1",
   "displayName": "Developer Famine",
   "description": "A frictionless developer bragging ledger and standup architect. Log wins and blockers without leaving your IDE.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "Remoshan3107",
   "icon": "resources/extension_icon.png",
   "license": "MIT",
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/remoshan/the-developer-famine.git"
   },
-  "keywords": ["standup", "changelog", "productivity", "logging", "daily log"],
+  "keywords": ["standup", "changelog", "productivity", "logging", "daily log", "todo", "task"],
   "engines": {
     "vscode": "^1.85.0"
   },
