@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { LogStore, parseLogInput } from './logStore';
 import { TodayLogProvider, formatStandupMarkdown } from './sidebarProvider';
 import { DashboardPanel } from './dashboardPanel';
+import { LogEntry } from './types';
 
 export function activate(context: vscode.ExtensionContext): void {
   const store = new LogStore(context);
@@ -29,16 +30,14 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
-      if (/^\/done\s*$/i.test(raw)) {
+      const doneMatch = raw.match(/^\/done(?:\s+(.*))?$/i);
+      if (doneMatch) {
         const openTodos = store.getOpenTodos();
         if (openTodos.length === 0) {
           vscode.window.showInformationMessage('Famine: no open todos to complete.');
           return;
         }
-        const picked = await vscode.window.showQuickPick(
-          openTodos.map((t) => ({ label: t.content, id: t.id })),
-          { title: 'Mark a todo as done', placeHolder: 'Select or type to filter…' }
-        );
+        const picked = await pickTodoToComplete(openTodos, (doneMatch[1] ?? '').trim());
         if (picked) {
           await store.markDone(picked.id);
           vscode.window.setStatusBarMessage('$(check) Famine: todo marked done', 2500);
@@ -75,6 +74,28 @@ export function activate(context: vscode.ExtensionContext): void {
       treeProvider.refresh();
     })
   );
+}
+
+function pickTodoToComplete(openTodos: LogEntry[], initialFilter: string): Promise<{ id: string } | undefined> {
+  return new Promise((resolve) => {
+    const quickPick = vscode.window.createQuickPick<vscode.QuickPickItem & { id: string }>();
+    quickPick.title = 'Mark a todo as done';
+    quickPick.placeholder = 'Select or type to filter…';
+    quickPick.ignoreFocusOut = true;
+    quickPick.items = openTodos.map((t) => ({ label: t.content, id: t.id }));
+    quickPick.value = initialFilter;
+
+    quickPick.onDidAccept(() => {
+      const selection = quickPick.selectedItems[0] ?? quickPick.activeItems[0];
+      quickPick.hide();
+      resolve(selection);
+    });
+    quickPick.onDidHide(() => {
+      quickPick.dispose();
+      resolve(undefined);
+    });
+    quickPick.show();
+  });
 }
 
 function scheduleMidnightRefresh(store: LogStore): vscode.Disposable {

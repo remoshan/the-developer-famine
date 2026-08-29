@@ -21,7 +21,7 @@ cd the-developer-famine
 npm install
 npm run compile
 npx vsce package
-code --install-extension the-developer-famine-1-1-1.2.0.vsix
+code --install-extension the-developer-famine-1-1-1.2.1.vsix
 ```
 
 Once published, this section will be replaced with a direct Marketplace link.
