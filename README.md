@@ -21,7 +21,7 @@ cd the-developer-famine
 npm install
 npm run compile
 npx vsce package
-code --install-extension the-developer-famine-1-1-1.2.1.vsix
+code --install-extension the-developer-famine-1-1-1.2.2.vsix
 ```
 
 Once published, this section will be replaced with a direct Marketplace link.
@@ -52,7 +52,7 @@ Just a plain note, no prefix needed
 
 ### Completing a todo
 
-Type `/done` (nothing after it) into the same log input. A picker opens listing every open todo — either click one directly, or type a few characters to filter the list (VS Code's built-in Quick Pick filtering), then press Enter. The selected todo flips to a `done` state everywhere it's shown (dashboard, sidebar, and standup output) — it isn't deleted, just marked complete. If there are no open todos, you'll get a message instead of an empty picker.
+Type `/done` into the same log input — the picker opens automatically the moment you finish typing it, no need to press Enter first. It lists every open todo; keep typing to filter it further (carries over anything you typed right after `/done`), or click one directly, then press Enter to confirm. The selected todo flips to a `done` state everywhere it's shown (dashboard, sidebar, and standup output) — it isn't deleted, just marked complete. If there are no open todos, you'll get a message instead of an empty picker.
 
 > **Why can't I just type `/developer-famine <message>` into VS Code's global search bar?**
 > VS Code's built-in Command Palette and Quick Open are fixed, closed components — extensions cannot make them accept trailing free text as an argument to a command. Selecting a command from the Palette must always open a *new* Quick Input for further text, which is exactly what "Log Entry" does. This is true for every VS Code extension (Git, GitLens, etc.), not a limitation specific to this one.

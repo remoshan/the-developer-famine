@@ -20,11 +20,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('famine.logEntry', async () => {
-      const raw = await vscode.window.showInputBox({
-        title: 'Log a win, blocker, note, or todo',
-        placeHolder: '/win ...   ·   /block ...   ·   /todo ...   ·   /done   ·   anything else = note',
-        ignoreFocusOut: true
-      });
+      const raw = await showLogInputBox();
 
       if (!raw || !raw.trim()) {
         return;
@@ -74,6 +70,38 @@ export function activate(context: vscode.ExtensionContext): void {
       treeProvider.refresh();
     })
   );
+}
+
+const LIVE_DONE_TRIGGER = /^\/done(?:\s|$)/i;
+
+function showLogInputBox(): Promise<string | undefined> {
+  return new Promise((resolve) => {
+    const box = vscode.window.createInputBox();
+    box.title = 'Log a win, blocker, note, or todo';
+    box.placeholder = '/win ...   ·   /block ...   ·   /todo ...   ·   /done   ·   anything else = note';
+    box.ignoreFocusOut = true;
+
+    let resolved = false;
+    const finish = (value: string | undefined) => {
+      if (resolved) {
+        return;
+      }
+      resolved = true;
+      box.hide();
+      box.dispose();
+      resolve(value);
+    };
+
+    box.onDidChangeValue((value) => {
+      if (LIVE_DONE_TRIGGER.test(value)) {
+        finish(value);
+      }
+    });
+    box.onDidAccept(() => finish(box.value));
+    box.onDidHide(() => finish(undefined));
+
+    box.show();
+  });
 }
 
 function pickTodoToComplete(openTodos: LogEntry[], initialFilter: string): Promise<{ id: string } | undefined> {
