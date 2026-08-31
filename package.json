@@ -2,7 +2,7 @@
   "name": "the-developer-famine-1-1",
   "displayName": "Developer Famine",
   "description": "A frictionless developer bragging ledger and standup architect. Log wins and blockers without leaving your IDE.",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "publisher": "Remoshan3107",
   "icon": "resources/extension_icon.png",
   "license": "MIT",
