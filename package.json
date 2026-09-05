@@ -2,7 +2,7 @@
   "name": "the-developer-famine-1-1",
   "displayName": "Developer Famine",
   "description": "A frictionless developer bragging ledger and standup architect. Log wins and blockers without leaving your IDE.",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "publisher": "Remoshan3107",
   "icon": "resources/extension_icon.png",
   "license": "MIT",
@@ -42,6 +42,18 @@
         "category": "Developer Famine",
         "title": "Refresh",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "famine.exportLog",
+        "category": "Developer Famine",
+        "title": "Export Log",
+        "icon": "$(save)"
+      },
+      {
+        "command": "famine.deleteEntry",
+        "category": "Developer Famine",
+        "title": "Delete Entry",
+        "icon": "$(trash)"
       }
     ],
     "viewsContainers": {
@@ -79,9 +91,27 @@
           "group": "navigation@3"
         },
         {
-          "command": "famine.refreshView",
+          "command": "famine.exportLog",
           "when": "view == famine.todayView",
           "group": "navigation@4"
+        },
+        {
+          "command": "famine.refreshView",
+          "when": "view == famine.todayView",
+          "group": "navigation@5"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "famine.deleteEntry",
+          "when": "view == famine.todayView && viewItem == famine.logEntry",
+          "group": "inline"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "famine.deleteEntry",
+          "when": "false"
         }
       ]
     },

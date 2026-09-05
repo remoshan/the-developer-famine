@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { LogStore, parseLogInput } from './logStore';
-import { TodayLogProvider, formatStandupMarkdown } from './sidebarProvider';
+import { TodayLogProvider, LogTreeItem, formatStandupMarkdown, formatFullHistoryMarkdown } from './sidebarProvider';
 import { DashboardPanel } from './dashboardPanel';
 import { LogEntry } from './types';
 
@@ -68,6 +68,46 @@ export function activate(context: vscode.ExtensionContext): void {
 
     vscode.commands.registerCommand('famine.refreshView', () => {
       treeProvider.refresh();
+    }),
+
+    vscode.commands.registerCommand('famine.deleteEntry', async (item: LogTreeItem) => {
+      if (item?.entry) {
+        await store.remove(item.entry.id);
+      }
+    }),
+
+    vscode.commands.registerCommand('famine.exportLog', async () => {
+      const all = store.getAll();
+      if (all.length === 0) {
+        vscode.window.showInformationMessage('Famine: nothing to export yet.');
+        return;
+      }
+
+      const format = await vscode.window.showQuickPick(['JSON', 'Markdown'], {
+        title: 'Export format'
+      });
+      if (!format) {
+        return;
+      }
+
+      const isJson = format === 'JSON';
+      const uri = await vscode.window.showSaveDialog({
+        defaultUri: vscode.Uri.file(isJson ? 'developer-famine-export.json' : 'developer-famine-export.md'),
+        filters: isJson ? { JSON: ['json'] } : { Markdown: ['md'] }
+      });
+      if (!uri) {
+        return;
+      }
+
+      const content = isJson
+        ? JSON.stringify(
+            all.map((e) => ({ ...e, timestamp: new Date(e.timestamp).toLocaleString() })),
+            null,
+            2
+          )
+        : formatFullHistoryMarkdown(all);
+      await vscode.workspace.fs.writeFile(uri, Buffer.from(content, 'utf8'));
+      vscode.window.showInformationMessage(`Famine: exported ${all.length} entries.`);
     })
   );
 }
