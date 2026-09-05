@@ -8,7 +8,9 @@ A frictionless developer bragging ledger and standup architect for VS Code. Log 
 - **Completable todos** — `/todo <task>` logs a task; `/done` opens a filterable picker of your open todos so you can mark one complete.
 - **Today's Log sidebar** — an Activity Bar view showing everything you've logged today, with color-coded icons per type, updating live as you log or delete.
 - **Copy Standup to Clipboard** — formats today's wins, blockers, open todos, completed todos, and notes into a Markdown bulleted list, ready to paste into Slack, a PR description, or a standup doc.
-- **Dashboard** — a full-screen webview showing your entire history, grouped by day, styled like a terminal log (`+ win`, `- blocker`, `* todo`, `x done`, `~ note`) using your actual editor font and your color theme's terminal colors.
+- **Dashboard** — a full-screen webview showing your entire history, grouped by day, styled like a terminal log (`+ win`, `- blocker`, `* todo`, `x done`, `~ note`) using your actual editor font and your color theme's terminal colors. Click any entry's text to edit it in place, or click `rm` to delete it.
+- **Delete from the sidebar too** — right-click any entry in the Today's Log view for a quick Delete action, without needing to open the dashboard.
+- **Export Log** — dump your entire history to a `.json` or `.md` file as a backup or to share, from the sidebar toolbar or the Command Palette.
 - **100% local** — everything is stored in VS Code's own local storage on your machine. No servers, no accounts, no network calls. See [Data & Privacy](#data--privacy) below.
 
 ## Installation
@@ -21,7 +23,7 @@ cd the-developer-famine
 npm install
 npm run compile
 npx vsce package
-code --install-extension the-developer-famine-1-1-1.2.2.vsix
+code --install-extension the-developer-famine-1-1-1.3.0.vsix
 ```
 
 Once published, this section will be replaced with a direct Marketplace link.
@@ -64,9 +66,18 @@ Type `/done` into the same log input — the picker opens automatically the mome
 | Developer Famine: Log Entry | `Ctrl+Alt+L` / `Cmd+Alt+L` |
 | Developer Famine: Copy Standup to Clipboard | — |
 | Developer Famine: Open Dashboard | — |
+| Developer Famine: Export Log | — |
 | Developer Famine: Refresh | — |
 
-All four are also available as buttons in the sidebar's view title bar.
+All five are also available as buttons in the sidebar's view title bar. Delete Entry is available by right-clicking an entry in the sidebar instead, since it needs a specific entry to act on.
+
+### Editing and deleting entries
+
+In the Dashboard, click an entry's text to edit it in place (Enter to save, Escape to cancel), or click `rm` to delete it. In the sidebar, right-click an entry for a Delete option. Entries can't be edited from the sidebar — use the Dashboard for that.
+
+### Exporting your log
+
+Run **Developer Famine: Export Log**, choose JSON (the raw entry data) or Markdown (grouped by day, same sectioning as Copy Standup), then pick a save location. Useful as a backup, or to hand off a log to someone else.
 
 ## Data & Privacy
 
@@ -78,7 +89,6 @@ If you use VS Code Settings Sync, your log data is included (opted in via `setKe
 
 - **Multiple windows**: if you have two VS Code windows open at once and log an entry in both around the same time, the second write can silently overwrite the first (a structural limit of `globalState` — it has no cross-process transactions). Logging from a single window at a time avoids this entirely.
 - **VS Code Profiles**: each Profile has isolated storage. Switching profiles will show an empty log — your data isn't deleted, just under the other profile.
-- **No export/backup command yet**: there's currently no way to export your history to a file as a safety net.
 
 ## Development
 
@@ -97,7 +107,7 @@ src/
   extension.ts       entry point — registers commands, status bar item, midnight refresh
   logStore.ts         globalState-backed storage + /win /block /todo parser + todo completion
   sidebarProvider.ts   TreeDataProvider for the "Today's Log" view + standup formatter
-  dashboardPanel.ts    webview panel host (CSP, data injection, delete round-trip)
+  dashboardPanel.ts    webview panel host (CSP, data injection, edit/delete round-trip)
 media/
   dashboard.css        dashboard styling
   dashboard.js          dashboard rendering logic

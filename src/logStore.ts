@@ -56,6 +56,17 @@ export class LogStore implements vscode.Disposable {
     this._onDidChange.fire();
   }
 
+  async updateContent(id: string, content: string): Promise<void> {
+    const all = this.getAll();
+    const entry = all.find((e) => e.id === id);
+    if (!entry) {
+      return;
+    }
+    entry.content = content;
+    await this.context.globalState.update(STORAGE_KEY, all);
+    this._onDidChange.fire();
+  }
+
   refresh(): void {
     this._onDidChange.fire();
   }

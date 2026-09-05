@@ -44,6 +44,12 @@ export class DashboardPanel {
       (message) => {
         if (message?.type === 'deleteEntry' && typeof message.id === 'string') {
           this.store.remove(message.id);
+        } else if (
+          message?.type === 'editEntry' &&
+          typeof message.id === 'string' &&
+          typeof message.content === 'string'
+        ) {
+          this.store.updateContent(message.id, message.content);
         }
       },
       null,

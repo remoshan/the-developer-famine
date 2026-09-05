@@ -91,7 +91,11 @@
     );
     row.appendChild(el('span', 'col-sign', SIGN[displayType] || ' '));
     row.appendChild(el('span', 'col-type', displayType));
-    row.appendChild(el('span', 'col-content', entry.content));
+
+    const content = el('span', 'col-content', entry.content);
+    content.title = 'Click to edit';
+    content.addEventListener('click', () => startEdit(content, entry));
+    row.appendChild(content);
 
     const del = el('button', 'col-delete', 'rm');
     del.title = 'Delete entry';
@@ -101,6 +105,42 @@
     row.appendChild(del);
 
     return row;
+  }
+
+  function startEdit(span, entry) {
+    const input = document.createElement('input');
+    input.className = 'col-content-edit';
+    input.value = entry.content;
+    span.replaceWith(input);
+    input.focus();
+    input.select();
+
+    let done = false;
+    const finish = (shouldSave) => {
+      if (done) {
+        return;
+      }
+      done = true;
+      if (shouldSave) {
+        const value = input.value.trim();
+        if (value && value !== entry.content) {
+          vscode.postMessage({ type: 'editEntry', id: entry.id, content: value });
+          return;
+        }
+      }
+      input.replaceWith(span);
+    };
+
+    input.addEventListener('blur', () => finish(true));
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        input.blur();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        finish(false);
+      }
+    });
   }
 
   function groupByDay(entries) {
