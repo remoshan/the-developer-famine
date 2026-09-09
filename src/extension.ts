@@ -62,6 +62,16 @@ export function activate(context: vscode.ExtensionContext): void {
       vscode.window.showInformationMessage('Famine: standup copied to clipboard.');
     }),
 
+    vscode.commands.registerCommand('famine.copyWeeklyReport', async () => {
+      const recent = store.getRecent(7);
+      if (recent.length === 0) {
+        vscode.window.showInformationMessage('Famine: nothing logged in the last 7 days.');
+        return;
+      }
+      await vscode.env.clipboard.writeText(formatStandupMarkdown(recent));
+      vscode.window.showInformationMessage('Famine: weekly report copied to clipboard.');
+    }),
+
     vscode.commands.registerCommand('famine.openDashboard', () => {
       DashboardPanel.createOrShow(context.extensionUri, store);
     }),
