@@ -4,33 +4,60 @@
 
   const SIGN = { win: '+', blocker: '-', note: '~', todo: '*', done: 'x' };
 
-  render(window.__FAMINE_DATA__ || []);
+  let allLogs = window.__FAMINE_DATA__ || [];
+  let query = '';
+
+  const searchBox = document.createElement('input');
+  searchBox.type = 'text';
+  searchBox.className = 'search-box';
+  searchBox.placeholder = 'filter…';
+  app.before(searchBox);
+  searchBox.addEventListener('input', () => {
+    query = searchBox.value.trim().toLowerCase();
+    render();
+  });
+
+  render();
 
   window.addEventListener('message', (event) => {
     if (event.data?.type === 'update') {
-      render(event.data.logs || []);
+      allLogs = event.data.logs || [];
+      render();
     }
   });
 
-  function render(entries) {
+  function render() {
+    const entries = query ? allLogs.filter((e) => e.content.toLowerCase().includes(query)) : allLogs;
     const wins = entries.filter((e) => e.type === 'win').length;
     const blockers = entries.filter((e) => e.type === 'blocker').length;
     const notes = entries.filter((e) => e.type === 'note').length;
     const todos = entries.filter((e) => e.type === 'todo' && !e.done).length;
     const done = entries.filter((e) => e.type === 'todo' && e.done).length;
+    const streak = computeStreak(allLogs);
 
     app.innerHTML = '';
     app.appendChild(buildHeader());
-    app.appendChild(buildSummary(entries.length, wins, blockers, notes, todos, done));
+    app.appendChild(buildSummary(entries.length, wins, blockers, notes, todos, done, streak));
 
     if (entries.length === 0) {
-      app.appendChild(buildEmptyState());
+      app.appendChild(buildEmptyState(query));
       return;
     }
 
     for (const { label, items } of groupByDay(entries)) {
       app.appendChild(buildDayGroup(label, items));
     }
+  }
+
+  function computeStreak(entries) {
+    const days = new Set(entries.map((e) => new Date(e.timestamp).toDateString()));
+    let streak = 0;
+    const cursor = new Date();
+    while (days.has(cursor.toDateString())) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
   }
 
   function buildHeader() {
@@ -41,7 +68,7 @@
     return header;
   }
 
-  function buildSummary(total, wins, blockers, notes, todos, done) {
+  function buildSummary(total, wins, blockers, notes, todos, done, streak) {
     const line = el('div', 'term-summary');
     line.appendChild(document.createTextNode(total + ' entries  '));
     line.appendChild(el('span', 'win', wins + ' win'));
@@ -53,12 +80,16 @@
     line.appendChild(el('span', 'done', done + ' done'));
     line.appendChild(document.createTextNode('  '));
     line.appendChild(el('span', 'note', notes + ' note'));
+    if (streak > 0) {
+      line.appendChild(document.createTextNode('  '));
+      line.appendChild(el('span', 'win', streak + ' day streak'));
+    }
     return line;
   }
 
-  function buildEmptyState() {
+  function buildEmptyState(query) {
     const wrap = el('div', 'empty-state');
-    wrap.appendChild(el('div', '', '// nothing logged yet'));
+    wrap.appendChild(el('div', '', query ? '// no matches' : '// nothing logged yet'));
     const hint = el('div', '');
     hint.appendChild(document.createTextNode('> run '));
     hint.appendChild(el('span', 'hint', '">Developer Famine: Log Entry"'));

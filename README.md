@@ -23,7 +23,7 @@ cd the-developer-famine
 npm install
 npm run compile
 npx vsce package
-code --install-extension the-developer-famine-1-1-1.3.0.vsix
+code --install-extension the-developer-famine-1-1-1.4.0.vsix
 ```
 
 Once published, this section will be replaced with a direct Marketplace link.
@@ -65,11 +65,12 @@ Type `/done` into the same log input — the picker opens automatically the mome
 |---|---|
 | Developer Famine: Log Entry | `Ctrl+Alt+L` / `Cmd+Alt+L` |
 | Developer Famine: Copy Standup to Clipboard | — |
+| Developer Famine: Copy Weekly Report | — |
 | Developer Famine: Open Dashboard | — |
 | Developer Famine: Export Log | — |
 | Developer Famine: Refresh | — |
 
-All five are also available as buttons in the sidebar's view title bar. Delete Entry is available by right-clicking an entry in the sidebar instead, since it needs a specific entry to act on.
+All six are also available as buttons in the sidebar's view title bar. Delete Entry is available by right-clicking an entry in the sidebar instead, since it needs a specific entry to act on. Copy Weekly Report works just like Copy Standup but covers the last 7 days instead of just today.
 
 ### Editing and deleting entries
 
@@ -78,6 +79,10 @@ In the Dashboard, click an entry's text to edit it in place (Enter to save, Esca
 ### Exporting your log
 
 Run **Developer Famine: Export Log**, choose JSON (the raw entry data) or Markdown (grouped by day, same sectioning as Copy Standup), then pick a save location. Useful as a backup, or to hand off a log to someone else.
+
+### Dashboard search and streaks
+
+The filter box at the top of the Dashboard matches against entry text as you type. The summary line also shows your current daily logging streak once it's 1 day or more.
 
 ## Data & Privacy
 

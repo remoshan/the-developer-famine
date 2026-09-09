@@ -25,6 +25,11 @@ export class LogStore implements vscode.Disposable {
     return this.getAll().filter((e) => e.type === 'todo' && !e.done);
   }
 
+  getRecent(days: number): LogEntry[] {
+    const since = Date.now() - days * 24 * 60 * 60 * 1000;
+    return this.getAll().filter((e) => e.timestamp >= since);
+  }
+
   async add(type: LogType, content: string): Promise<LogEntry> {
     const entry: LogEntry = {
       id: randomId(),
