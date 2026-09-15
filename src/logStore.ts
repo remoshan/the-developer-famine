@@ -90,19 +90,3 @@ function startOfDay(ts: number): number {
 function randomId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
-
-export function parseLogInput(raw: string): { type: LogType; content: string } {
-  const winMatch = raw.match(/^\/win(?:\s+(.*))?$/i);
-  if (winMatch) {
-    return { type: 'win', content: (winMatch[1] ?? '').trim() };
-  }
-  const blockMatch = raw.match(/^\/block(?:er)?(?:\s+(.*))?$/i);
-  if (blockMatch) {
-    return { type: 'blocker', content: (blockMatch[1] ?? '').trim() };
-  }
-  const todoMatch = raw.match(/^\/todo(?:\s+(.*))?$/i);
-  if (todoMatch) {
-    return { type: 'todo', content: (todoMatch[1] ?? '').trim() };
-  }
-  return { type: 'note', content: raw.trim() };
-}

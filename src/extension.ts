@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { LogStore, parseLogInput } from './logStore';
-import { TodayLogProvider, LogTreeItem, formatStandupMarkdown, formatFullHistoryMarkdown } from './sidebarProvider';
+import { LogStore } from './logStore';
+import { TodayLogProvider, LogTreeItem } from './sidebarProvider';
+import { parseLogInput, formatStandupMarkdown, formatFullHistoryMarkdown } from './format';
 import { DashboardPanel } from './dashboardPanel';
 import { LogEntry } from './types';
 
